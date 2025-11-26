@@ -1,0 +1,65 @@
+# PR言語チェック（日本語必須化）
+#
+# このワークフローは、PRのタイトルと説明文が日本語で記載されているかを自動検証します。
+# 日本語が含まれていない場合、CIを失敗させてマージを防止します。
+# コメント投稿機能を削除し、CI結果（OK/NG）のみで判定します。
+
+name: PR Language Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+# GitHub API 呼び出しに必要な権限
+permissions:
+  contents: read # リポジトリの読み取り
+
+jobs:
+  check-pr-language:
+    runs-on: ubuntu-latest
+    name: 日本語記載チェック
+
+    steps:
+      - name: PR言語検証
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prBody = context.payload.pull_request.body || '';
+            const prTitle = context.payload.pull_request.title || '';
+
+            console.log('=== PR Language Check ===');
+            console.log('PR Title:', prTitle);
+            console.log('PR Body length:', prBody.length);
+
+            // 日本語文字の存在チェック（ひらがな、カタカナ、漢字）
+            const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/;
+
+            const hasTitleJapanese = japaneseRegex.test(prTitle);
+            const hasBodyJapanese = japaneseRegex.test(prBody);
+
+            console.log('Title has Japanese:', hasTitleJapanese);
+            console.log('Body has Japanese:', hasBodyJapanese);
+
+            // 説明文が空の場合もエラー
+            const hasNoDescription = prBody.trim().length === 0;
+
+            if (hasNoDescription) {
+              console.error('❌ PR description is empty');
+              core.setFailed('❌ PR description is empty. Please add a description in Japanese.');
+              return;
+            }
+
+            if (!hasTitleJapanese || !hasBodyJapanese) {
+              // 日本語がない場合の詳細判定
+              let missingParts = [];
+              if (!hasTitleJapanese) missingParts.push('タイトル');
+              if (!hasBodyJapanese) missingParts.push('説明文');
+
+              console.error(`❌ Missing Japanese in: ${missingParts.join(', ')}`);
+              const errorMessage = `❌ PR must be written in Japanese (日本語必須). Missing: ${missingParts.join(', ')}`;
+              core.setFailed(errorMessage);
+              return;
+            }
+
+            // 成功メッセージ
+            console.log('✅ PR language check passed - Japanese detected in both title and body');
