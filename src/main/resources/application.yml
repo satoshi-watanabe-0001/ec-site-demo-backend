@@ -1,11 +1,11 @@
 server:
   port: 8080
-  servlet:
-    context-path: /api/v1
 
 spring:
   application:
-    name: ${SERVICE_NAME:backend-template-service}
+    name: ${SERVICE_NAME:product-category-service}
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   
   datasource:
     url: jdbc:postgresql://localhost:5432/${DB_NAME:ahamo_dummy_demo2}
@@ -47,7 +47,7 @@ spring:
 # Logging Configuration
 logging:
   level:
-    com.ahamo.dummy.demo2: INFO
+    com.example.ec: INFO
     org.springframework.security: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
