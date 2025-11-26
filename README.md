@@ -149,3 +149,5 @@ GitHub Actions を使用したCI/CDパイプラインが設定されています
 ## ライセンス
 
 このプロジェクトは内部使用のためのテンプレートです。
+
+<!-- CI設定更新: organization-standardsに基づく -->
