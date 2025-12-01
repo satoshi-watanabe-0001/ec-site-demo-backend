@@ -262,7 +262,8 @@ class ProductCategoryApiIntegrationTest {
     @DisplayName("正常系: ページネーションパラメータが機能する")
     void shouldSupportPaginationParameters() {
       ResponseEntity<CategoryDetailResponse> response =
-          restTemplate.getForEntity(baseUrl + "/iphone?page=0&size=1", CategoryDetailResponse.class);
+          restTemplate.getForEntity(
+              baseUrl + "/iphone?page=0&size=1", CategoryDetailResponse.class);
 
       assertThat(response.getBody()).isNotNull();
       assertThat(response.getBody().getData().getProducts()).hasSize(1);
