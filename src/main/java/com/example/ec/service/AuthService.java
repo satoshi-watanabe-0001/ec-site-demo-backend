@@ -50,10 +50,12 @@ public class AuthService {
       throw new AuthenticationException("認証情報が無効です");
     }
 
-    String accessToken = jwtService.generateAccessToken(email);
+    boolean rememberMe = loginRequest.isRememberMe();
+    String accessToken = jwtService.generateAccessToken(email, rememberMe);
     String refreshToken = jwtService.generateRefreshToken(email);
+    long expiresIn = jwtService.getAccessTokenExpirationSeconds(rememberMe);
 
-    log.info("ログイン成功: email={}", email);
+    log.info("ログイン成功: email={}, rememberMe={}", email, rememberMe);
 
     UserResponse userResponse =
         UserResponse.builder()
@@ -66,7 +68,7 @@ public class AuthService {
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .tokenType("Bearer")
-        .expiresIn(3600L)
+        .expiresIn(expiresIn)
         .user(userResponse)
         .build();
   }

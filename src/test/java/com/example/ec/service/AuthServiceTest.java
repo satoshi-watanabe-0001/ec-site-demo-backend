@@ -52,16 +52,18 @@ class AuthServiceTest {
   }
 
   @Test
-  @DisplayName("ユーザー認証: 正常系")
+  @DisplayName("ユーザー認証: 正常系（rememberMe=false）")
   void authenticateUser_success() {
     LoginRequest loginRequest = new LoginRequest();
     loginRequest.setEmail("test@example.com");
     loginRequest.setPassword("password123");
+    loginRequest.setRememberMe(false);
 
     when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches("password123", "$2a$10$hashedpassword")).thenReturn(true);
-    when(jwtService.generateAccessToken("test@example.com")).thenReturn("access-token-xxx");
+    when(jwtService.generateAccessToken("test@example.com", false)).thenReturn("access-token-xxx");
     when(jwtService.generateRefreshToken("test@example.com")).thenReturn("refresh-token-xxx");
+    when(jwtService.getAccessTokenExpirationSeconds(false)).thenReturn(3600L);
 
     AuthResponse response = authService.authenticateUser(loginRequest);
 
@@ -69,6 +71,32 @@ class AuthServiceTest {
     assertThat(response.getRefreshToken()).isEqualTo("refresh-token-xxx");
     assertThat(response.getTokenType()).isEqualTo("Bearer");
     assertThat(response.getExpiresIn()).isEqualTo(3600L);
+    assertThat(response.getUser().getId()).isEqualTo("1");
+    assertThat(response.getUser().getName()).isEqualTo("テストユーザー");
+    assertThat(response.getUser().getEmail()).isEqualTo("test@example.com");
+  }
+
+  @Test
+  @DisplayName("ユーザー認証: 正常系（rememberMe=true）")
+  void authenticateUser_successWithRememberMe() {
+    LoginRequest loginRequest = new LoginRequest();
+    loginRequest.setEmail("test@example.com");
+    loginRequest.setPassword("password123");
+    loginRequest.setRememberMe(true);
+
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+    when(passwordEncoder.matches("password123", "$2a$10$hashedpassword")).thenReturn(true);
+    when(jwtService.generateAccessToken("test@example.com", true))
+        .thenReturn("access-token-extended");
+    when(jwtService.generateRefreshToken("test@example.com")).thenReturn("refresh-token-xxx");
+    when(jwtService.getAccessTokenExpirationSeconds(true)).thenReturn(25200L);
+
+    AuthResponse response = authService.authenticateUser(loginRequest);
+
+    assertThat(response.getAccessToken()).isEqualTo("access-token-extended");
+    assertThat(response.getRefreshToken()).isEqualTo("refresh-token-xxx");
+    assertThat(response.getTokenType()).isEqualTo("Bearer");
+    assertThat(response.getExpiresIn()).isEqualTo(25200L);
     assertThat(response.getUser().getId()).isEqualTo("1");
     assertThat(response.getUser().getName()).isEqualTo("テストユーザー");
     assertThat(response.getUser().getEmail()).isEqualTo("test@example.com");

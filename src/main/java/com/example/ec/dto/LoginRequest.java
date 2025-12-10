@@ -22,4 +22,7 @@ public class LoginRequest {
   @NotBlank(message = "パスワードは必須です")
   @Size(min = 6, max = 100, message = "パスワードは6文字以上100文字以下で入力してください")
   private String password;
+
+  /** ログイン状態を保持するフラグ（trueの場合、トークン有効期限を延長） */
+  private boolean rememberMe;
 }

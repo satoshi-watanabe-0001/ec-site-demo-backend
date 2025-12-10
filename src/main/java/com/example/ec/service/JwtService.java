@@ -25,6 +25,9 @@ public class JwtService {
 
   private final JwtConfig jwtConfig;
 
+  /** rememberMe有効時のアクセストークン有効期限延長倍率（7日間 = 7倍） */
+  private static final long REMEMBER_ME_MULTIPLIER = 7L;
+
   /**
    * アクセストークンを生成する
    *
@@ -32,12 +35,43 @@ public class JwtService {
    * @return 生成されたJWTトークン
    */
   public String generateAccessToken(String email) {
+    return generateAccessToken(email, false);
+  }
+
+  /**
+   * アクセストークンを生成する（rememberMe対応）
+   *
+   * <p>rememberMeがtrueの場合、トークン有効期限を7倍に延長する。 これにより、通常1時間のトークンが7日間有効になる。
+   *
+   * @param email ユーザーのメールアドレス（サブジェクトとして使用）
+   * @param rememberMe ログイン状態を保持するフラグ
+   * @return 生成されたJWTトークン
+   */
+  public String generateAccessToken(String email, boolean rememberMe) {
+    long expiration = jwtConfig.getAccessTokenExpiration();
+    if (rememberMe) {
+      expiration *= REMEMBER_ME_MULTIPLIER;
+    }
     return Jwts.builder()
         .subject(email)
         .issuedAt(new Date())
-        .expiration(new Date(System.currentTimeMillis() + jwtConfig.getAccessTokenExpiration()))
+        .expiration(new Date(System.currentTimeMillis() + expiration))
         .signWith(getSigningKey())
         .compact();
+  }
+
+  /**
+   * アクセストークンの有効期限（秒）を取得する
+   *
+   * @param rememberMe ログイン状態を保持するフラグ
+   * @return 有効期限（秒）
+   */
+  public long getAccessTokenExpirationSeconds(boolean rememberMe) {
+    long expiration = jwtConfig.getAccessTokenExpiration();
+    if (rememberMe) {
+      expiration *= REMEMBER_ME_MULTIPLIER;
+    }
+    return expiration / 1000;
   }
 
   /**
