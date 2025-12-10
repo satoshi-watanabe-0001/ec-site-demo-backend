@@ -24,6 +24,28 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class GlobalExceptionHandler {
 
   /**
+   * 認証例外を処理する
+   *
+   * @param ex 例外
+   * @return エラーレスポンス
+   */
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+    log.warn("認証エラー: {}", ex.getMessage());
+
+    ErrorResponse response =
+        ErrorResponse.builder()
+            .success(false)
+            .errorCode("AUTHENTICATION_FAILED")
+            .message(ex.getMessage())
+            .timestamp(Instant.now())
+            .requestId(UUID.randomUUID().toString())
+            .build();
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+  }
+
+  /**
    * カテゴリが見つからない例外を処理する
    *
    * @param ex 例外
