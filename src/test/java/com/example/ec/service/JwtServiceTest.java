@@ -92,4 +92,44 @@ class JwtServiceTest {
 
     assertThat(isValid).isFalse();
   }
+
+  @Test
+  @DisplayName("アクセストークン生成: rememberMe=true")
+  void generateAccessToken_withRememberMe() {
+    String email = "test@example.com";
+
+    String token = jwtService.generateAccessToken(email, true);
+
+    assertThat(token).isNotNull();
+    assertThat(token).isNotEmpty();
+    assertThat(token.split("\\.")).hasSize(3);
+  }
+
+  @Test
+  @DisplayName("アクセストークン生成: rememberMe=false")
+  void generateAccessToken_withoutRememberMe() {
+    String email = "test@example.com";
+
+    String token = jwtService.generateAccessToken(email, false);
+
+    assertThat(token).isNotNull();
+    assertThat(token).isNotEmpty();
+    assertThat(token.split("\\.")).hasSize(3);
+  }
+
+  @Test
+  @DisplayName("アクセストークン有効期限取得: rememberMe=false")
+  void getAccessTokenExpirationSeconds_withoutRememberMe() {
+    long expirationSeconds = jwtService.getAccessTokenExpirationSeconds(false);
+
+    assertThat(expirationSeconds).isEqualTo(3600L);
+  }
+
+  @Test
+  @DisplayName("アクセストークン有効期限取得: rememberMe=true（7倍延長）")
+  void getAccessTokenExpirationSeconds_withRememberMe() {
+    long expirationSeconds = jwtService.getAccessTokenExpirationSeconds(true);
+
+    assertThat(expirationSeconds).isEqualTo(25200L);
+  }
 }
