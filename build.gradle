@@ -64,6 +64,40 @@ tasks.named('test') {
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 }
 
+// 統合テスト用のソースセット
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+// 統合テストリソース処理の重複設定
+tasks.named('processIntegrationTestResources', Copy) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// 統合テストタスク
+tasks.register('integrationTest', Test) {
+    description = '統合テストを実行します'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    useJUnitPlatform()
+    shouldRunAfter test
+    // 統合テスト用のJWTシークレットを環境変数で設定
+    environment 'JWT_SECRET', System.getenv('JWT_SECRET') ?: 'integration-test-jwt-secret-key-for-testing-purposes-only-32bytes'
+}
+
 jacocoTestReport {
     dependsOn test
     reports {
