@@ -33,11 +33,11 @@ spring:
       password: admin
       roles: ADMIN
 
-# JWT Configuration (Optional - uncomment if needed)
-# jwt:
-#   secret: ${JWT_SECRET:mySecretKey}
-#   access-token-expiration: 3600000  # 1 hour in milliseconds
-#   refresh-token-expiration: 86400000 # 24 hours in milliseconds
+# JWT設定
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}  # 1時間（ミリ秒）
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:86400000} # 24時間（ミリ秒）
 
 # Rate Limiting Configuration (Optional - uncomment if needed)
 # rate-limit:
