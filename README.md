@@ -48,8 +48,10 @@ export DB_PASSWORD=your_db_password
 # サービス設定
 export SERVICE_NAME=your-service-name
 
-# JWT設定（認証が必要な場合）
-export JWT_SECRET=your_jwt_secret_key
+# JWT設定（認証APIを使用する場合は必須）
+# Base64エンコードされた256bit以上のキーを設定してください
+# 例: openssl rand -base64 32 で生成可能
+export JWT_SECRET=your_base64_encoded_jwt_secret_key
 ```
 
 ### 3. ローカル開発環境のセットアップ
@@ -99,6 +101,34 @@ src/
 
 ### ヘルスチェック
 - `GET /api/v1/health` - サービスの稼働状況確認
+
+### 認証API
+- `POST /api/v1/auth/login` - ユーザーログイン
+
+#### ログインリクエスト例
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123"
+  }'
+```
+
+#### ログインレスポンス例
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "user": {
+    "id": "1",
+    "name": "ユーザー名",
+    "email": "user@example.com"
+  }
+}
+```
 
 ## オプション機能
 
